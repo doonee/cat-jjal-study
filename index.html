@@ -37,6 +37,13 @@
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <script type="text/babel">
+        const fetchCat = async (text) => {
+            const OPEN_API_DOMAIN = "https://cataas.com";
+            const response = await fetch(`${OPEN_API_DOMAIN}/cat/says/${text}?json=true`);
+            const responseJson = await response.json();
+            return `${OPEN_API_DOMAIN}/${responseJson.url}`;
+        };
+
         const jsonLocalStorage = {
             setItem: (key, value) => {
                 localStorage.setItem(key, JSON.stringify(value));
@@ -99,7 +106,7 @@
                     setErrorMsg('빈 값으로 만들 수 없습니다.');
                     return;
                 }
-                updateMainImg();
+                updateMainImg(value);
             }
 
             return (
@@ -125,8 +132,19 @@
             const [mainCardImg, setMainCardImg] = React.useState(catImg1);
             const [favorites, setFavorites] = React.useState(jsonLocalStorage.getItem('favorites') || []);
 
-            const updateMainImg = () => {
-                setMainCardImg(catImg2);
+            const setInitialImg = async () => {
+                const newCat = await fetchCat('FIRST CAT');
+                setMainCardImg(newCat);
+            }
+
+            React.useEffect(() => {
+                setInitialImg();
+            }, []);
+
+            const updateMainImg = async (value) => {
+                const newCat = await fetchCat(value);
+
+                setMainCardImg(newCat);
                 const nextCounter = counter + 1;
                 setCounter(nextCounter);
                 jsonLocalStorage.setItem('nextCounter', nextCounter);
